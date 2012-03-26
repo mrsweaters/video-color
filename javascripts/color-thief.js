@@ -89,7 +89,6 @@ function getDominantColor(sourceVideo, sx, sy, sw, sh, dx, dy, dw, dh){
       }
     }
   };
-  console.log(pixelArray.length);
 
   // Send array to quantize function which clusters values
   // using median cut algorithm
