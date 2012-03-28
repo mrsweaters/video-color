@@ -106,10 +106,10 @@ $(window).load(function() {
     setCardinalColors: function(self) {
       var $target = $('.tracking-point'),
       offset = $target.offset();
-      self.cardinal = { n: {top: -10, left: 0},
-                   s: {top: 10, left: 0},
-                   e: {top: 0, left: 10},
-                   w: {top: 0, left: -10}};
+      self.cardinal = { n: {top: -1, left: 0},
+                   s: {top: 1, left: 0},
+                   e: {top: 0, left: 1},
+                   w: {top: 0, left: -1}};
 
       $.each(self.cardinal, function(key, value){
         var values = self.getDominantColor(self.$src, offset.left - self.videoOffset.left + self.cardinal[key].left,
@@ -123,35 +123,29 @@ $(window).load(function() {
       });
     },
     closestCardinalShift : function(target) {
-      var diff = cand = 255,
-        north = this.nextDominantColor.n,
+      var north = this.nextDominantColor.n,
         south = this.nextDominantColor.s,
         east = this.nextDominantColor.e,
         west = this.nextDominantColor.w,
-        nDistance = Math.sqrt((north.r - target.r)^2 + (north.g - target.g)^2 + (north.b - target.b)^2),
-        sDistance = Math.sqrt((south.r - target.r)^2 + (south.g - target.g)^2 + (south.b - target.b)^2),
-        eDistance = Math.sqrt((east.r - target.r)^2 + (east.g - target.g)^2 + (east.b - target.b)^2),
-        wDistance = Math.sqrt((west.r - target.r)^2 + (west.g - target.g)^2 + (west.b - target.b)^2),
-        distanceArr = [nDistance, sDistance, eDistance, wDistance];
+        nDistance = Math.sqrt(Math.abs(north.r - target.r)^2 + Math.abs(north.g - target.g)^2 + Math.abs(north.b - target.b)^2),
+        sDistance = Math.sqrt(Math.abs(south.r - target.r)^2 + Math.abs(south.g - target.g)^2 + Math.abs(south.b - target.b)^2),
+        eDistance = Math.sqrt(Math.abs(east.r - target.r)^2 + Math.abs(east.g - target.g)^2 + Math.abs(east.b - target.b)^2),
+        wDistance = Math.sqrt(Math.abs(west.r - target.r)^2 + Math.abs(west.g - target.g)^2 + Math.abs(west.b - target.b)^2),
+        distanceArr = [nDistance, sDistance, eDistance, wDistance],
+        min = Math.max.apply(Math, distanceArr),
+        index = $(distanceArr).index(min);
 
-      for (var dist in distanceArr) {
-        var offset = Math.abs(distanceArr[dist] - target);
-        if (offset < diff) {
-          diff = offset;
-          cand = dist;
-        }
-      }
-
-      if (cand = 'nDistance') return 'north';
-      if (cand = 'sDistance') return 'south';
-      if (cand = 'eDistance') return 'east';
-      if (cand = 'wDistance') return 'west';
+      if (index == 0) return 'north';
+      if (index == 1) return 'south';
+      if (index == 2) return 'east';
+      if (index == 3) return 'west';
 
     }
   };
   colorTracker.init();
 
-  colorTracker.$src.bind('timeupdate', function() {
+  colorTracker.$src.on('play', function() {
+    setInterval(function () {
     var $trackingPoint = $('.tracking-point'),
       offset = newOffset = $trackingPoint.offset(),
       prevDominantColor = colorTracker.currentDominantColor,
@@ -192,5 +186,6 @@ $(window).load(function() {
     $('body').css('background', 'rgb(' + dominantColor.r + ',' + dominantColor.g + ',' + dominantColor.b + ')');
 
     colorTracker.setCardinalColors(colorTracker);
+  }, 29.97);
   });
 });
