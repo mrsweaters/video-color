@@ -122,9 +122,8 @@ $(window).load(function() {
         self.nextDominantColor[key].b = values.b;
       });
     },
-    closestCardinalShift : function() {
-      var target = this.currentDominantColor,
-        diff = cand = 255,
+    closestCardinalShift : function(target) {
+      var diff = cand = 255,
         north = this.nextDominantColor.n,
         south = this.nextDominantColor.s,
         east = this.nextDominantColor.e,
@@ -148,68 +147,50 @@ $(window).load(function() {
       if (cand = 'eDistance') return 'east';
       if (cand = 'wDistance') return 'west';
 
-    },
-    rgb2hsv : function(r,g,b) {
-      var computedH = 0,
-        computedS = 0,
-        computedV = 0,
-        r = parseInt( (''+r).replace(/\s/g,''),10 ),
-        g = parseInt( (''+g).replace(/\s/g,''),10 ),
-        b = parseInt( (''+b).replace(/\s/g,''),10 );
-
-      if ( r==null || g==null || b==null ||
-         isNaN(r) || isNaN(g)|| isNaN(b) ) {
-        console.log('Please enter numeric RGB values!');
-        return;
-      }
-      if (r<0 || g<0 || b<0 || r>255 || g>255 || b>255) {
-        console.log('RGB values must be in the range 0 to 255.');
-        return;
-      }
-      r=r/255; g=g/255; b=b/255;
-      var minRGB = Math.min(r,Math.min(g,b)),
-        maxRGB = Math.max(r,Math.max(g,b));
-
-      // Black-gray-white
-      if (minRGB==maxRGB) {
-        computedV = minRGB;
-        return [0,0,computedV];
-      }
-
-      // Colors other than black-gray-white:
-      var d = (r==minRGB) ? g-b : ((b==minRGB) ? r-g : b-r),
-        h = (r==minRGB) ? 3 : ((b==minRGB) ? 1 : 5);
-      computedH = 60*(h - d/(maxRGB - minRGB));
-      computedS = (maxRGB - minRGB)/maxRGB;
-      computedV = maxRGB;
-      return [computedH,computedS,computedV];
     }
   };
   colorTracker.init();
 
-  colorTracker.$src[0].bind('ontimeupdate', function() {
+  colorTracker.$src.bind('timeupdate', function() {
     var $trackingPoint = $('.tracking-point'),
-      offset = $trackingPoint.offset();
-    self.dimensions = { 'w': $trackingPoint.width(), 'h' : $trackingPoint.height() },
-    prevDominantColor = colorTracker.currentDominantColor;
-
-    var dominantColor = self.getDominantColor(
-      colorTracker.$src, offset.left - colorTracker.videoOffset.left, offset.top - colorTracker.videoOffset.top, colorTracker.dimensions.w, colorTracker.dimensions.h,
-      offset.left - colorTracker.videoOffset.left, offset.top - colorTracker.videoOffset.top, colorTracker.dimensions.w, colorTracker.dimensions.h);
+      offset = newOffset = $trackingPoint.offset(),
+      prevDominantColor = colorTracker.currentDominantColor,
+      dominantColor = colorTracker.getDominantColor(
+        colorTracker.$src, offset.left - colorTracker.videoOffset.left, offset.top - colorTracker.videoOffset.top, colorTracker.dimensions.w, colorTracker.dimensions.h,
+        offset.left - colorTracker.videoOffset.left, offset.top - colorTracker.videoOffset.top, colorTracker.dimensions.w, colorTracker.dimensions.h);
 
     $.each(dominantColor, function(key, value) {
       colorTracker.currentDominantColor[key] = value;
     });
 
-    ui.box.css({ border: '1px dashed white', background: 'rgba(255,69,0, 0.5)', padding: '0.5em' })
-      .append('x:' + offset.left + ', y:' + offset.top)
+    var shiftDirection = colorTracker.closestCardinalShift(prevDominantColor);
+    console.log(shiftDirection);
+    switch (shiftDirection) {
+      case 'north':
+        newOffset.top = newOffset.top + colorTracker.cardinal.n.top;
+        break;
+      case 'south':
+        newOffset.top = newOffset.top + colorTracker.cardinal.s.top;
+        break;
+      case 'east':
+        newOffset.left = newOffset.left + colorTracker.cardinal.e.left;
+        break;
+      case 'west':
+        newOffset.left = newOffset.left + colorTracker.cardinal.w.left;
+        break;
+      default:
+        newOffset;
+    }
+
+    $trackingPoint.css({ top: newOffset.top, left: newOffset.top })
+      .empty()
+      .append('x:' + newOffset.left + ', y:' + newOffset.top)
       .append('<br>')
-      .append('w:' + ui.box.width() + ', h:' + ui.box.height());
-    ui.box.attr('id', 'trackingPoint' + Math.floor(Math.random(24)*10000)).addClass('tracking-point');
+      .append('w:' + $trackingPoint.width() + ', h:' + $trackingPoint.height());
 
     console.log('Dominant Color: r: ' + dominantColor.r + ' g: ' + dominantColor.g + ' b: ' + dominantColor.b);
     $('body').css('background', 'rgb(' + dominantColor.r + ',' + dominantColor.g + ',' + dominantColor.b + ')');
 
-    self.setCardinalColors(self);
+    colorTracker.setCardinalColors(colorTracker);
   });
 });
