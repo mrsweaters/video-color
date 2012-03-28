@@ -11,7 +11,7 @@ $(window).load(function() {
     init : function() {
       this.videoOffset = this.$src.offset(),
       self = this;
-      // this.$src.ontimeupdate = this.
+
       self.CanvasVideo.prototype.clear = function() {
         this.context.clearRect(0, 0, this.width, this.height);
       };
@@ -135,10 +135,10 @@ $(window).load(function() {
         min = Math.max.apply(Math, distanceArr),
         index = $(distanceArr).index(min);
 
-      if (index == 0) return 'north';
-      if (index == 1) return 'south';
-      if (index == 2) return 'east';
-      if (index == 3) return 'west';
+      if (index === 0) return 'north';
+      if (index === 1) return 'south';
+      if (index === 2) return 'east';
+      if (index === 3) return 'west';
 
     }
   };
@@ -175,6 +175,7 @@ $(window).load(function() {
       default:
         newOffset;
     }
+    console.log(newOffset);
 
     $trackingPoint.css({ top: newOffset.top, left: newOffset.top })
       .empty()
