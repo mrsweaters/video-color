@@ -1,3 +1,8 @@
+/*
+  ColorTracker v0.1
+  Copyright (C) 2012 by Jordan Humphreys. All Rights Reserved.
+  http://jordanhumphreys.com
+*/
 $(window).load(function() {
   var colorTracker = {
     $src: $('#video'),
